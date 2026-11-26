@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>家庭网络卡顿的排查顺序</title>
+<meta name="description" content="网络排查 的实用经验：包含具体步骤、数字参考与常见错误，约 2000 字。">
+<meta name="keywords" content="网络排查,步骤,实用经验,步骤">
+<link rel="canonical" href="">
+<script type="application/ld+json">{"@context": "https://schema.org", "@graph": [{"@type": "Article", "headline": "家庭网络卡顿的排查顺序", "description": "网络排查 的实用经验整理，包含具体做法与常见错误。", "author": {"@type": "Person", "name": "编辑部"}, "datePublished": "2026-11-26", "inLanguage": "zh-CN"}, {"@type": "WebPage", "name": "家庭网络卡顿的排查顺序"}]}</script>
+<style>
+body{font-family:-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;max-width:820px;margin:40px auto;padding:0 20px;line-height:1.9;color:#1f2328}
+h1{font-size:28px;line-height:1.4}h2{font-size:21px;margin-top:34px;border-left:4px solid #0b62d6;padding-left:10px}
+h3{font-size:17px;margin-top:22px}ul,ol{padding-left:24px}a{color:#0b62d6;text-decoration:none}a:hover{text-decoration:underline}
+.toc{background:#f6f8fa;border:1px solid #e5e7eb;padding:12px 18px;border-radius:8px;font-size:14px}
+footer{margin-top:44px;border-top:1px solid #eee;padding-top:16px;font-size:14px;color:#57606a}
+</style>
+</head>
+<body>
+<h1>家庭网络卡顿的排查顺序</h1>
+<div class="toc"><strong>目录</strong><br>一、问题与目标　二、具体做法　三、常见错误　四、效果判断　五、常见问题</div>
+<h2>网络排查：从“断网了”到定位根因的实操路径</h2>
+<p>同事在群里喊“网又断了”，你 remote 上去一看，浏览器转圈、会议掉线、文件传不上去——症状相同，原因可能天差地别：可能是 Wi-Fi 信号弱、路由器 DHCP 池耗尽、DNS 解析超时、运营商链路抖动，也可能是本机代理或防火墙规则误伤。盲目重启设备平均浪费 20–40 分钟，还容易把现场证据清掉。下面按可复现的步骤拆成四段，每段给出判断阈值、常见错误和操作顺序，目标是在 10–15 分钟内把问题收敛到“本机 / 局域网 / 出口链路 / 远端服务”四类之一。</p>
+
+<h2>一、先定边界：5 分钟内判断“是不是只有你”</h2>
+<p><strong>步骤 1</strong>：记录起始时间（精确到分钟）和现象（完全无网 / 部分应用失败 / 时断时续）。<strong>步骤 2</strong>：让同一房间的同事打开任意网页，若对方正常，问题大概率在本机；若 2 人以上同时异常，跳到第二节。<strong>步骤 3</strong>：本机执行“三连测”——访问一个已知稳定的公网地址、解析一个常用域名、ping 网关。三项中若“网关通、域名不通”，优先怀疑 DNS；若“网关不通”，优先怀疑本机到 AP/交换机的二层链路。</p>
+<p>常见错误：一上来就重启路由器。重启会清空日志和 DHCP 租约记录，后续定位缺少证据；且如果问题是运营商侧抖动，重启只会让你多等 3–5 分钟。<strong>阈值建议</strong>：连续 3 次 ping 网关，丢包 ≥ 20% 或时延从 <5ms 跳到 >100ms，按局域网问题处理；丢包 0 但域名解析失败 2 次以上，按 DNS 问题处理。</p>
+<p>另一个高频坑是“假断网”：浏览器提示代理错误、证书过期、账号掉线，实际链路正常。判断方法：看系统网络图标是否显示已连接、能否打开一个纯 IP 的测试页。若纯 IP 可通、域名不可通，基本可排除物理链路，直接进入 DNS/代理排查，能省下 10 分钟以上。</p>
+
+<h2>二、本机与接入层：按 1→6 顺序排除，别跳步</h2>
+<p><strong>步骤 1</strong>：关闭 VPN/代理（含系统代理和浏览器插件），再测一次。<strong>步骤 2</strong>：查看 IP 是否拿到 169.254 开头的地址——出现即说明 DHCP 失败，常见于地址池耗尽或 AP 隔离。<strong>步骤 3</strong>：有线优先，换一根网线或换一个端口，排除线缆/端口故障（企业环境里端口被误关的工单占比不低）。<strong>步骤 4</strong>：Wi-Fi 场景看信号强度，低于 -75dBm 且重传率高时，先靠近 AP 再测。<strong>步骤 5</strong>：检查本机防火墙/安全软件是否在 24 小时内更新过规则。<strong>步骤 6</strong>：重启网络适配器而非整机，观察是否立即恢复。</p>
+<p>常见错误与代价：把“能连上 Wi-Fi”等同于“网络正常”；在 DHCP 失败时手动配一个静态 IP 却不记录，导致后续 IP 冲突，排查时间从 10 分钟拉长到 1 小时。另一个错误是多人同时改配置——建议只留一人操作，改动前截图保存原 IP、DNS、代理设置，回滚成本可控制在 2 分钟内。</p>
+<p><strong>金额与时间参考</strong>：小型办公室更换一个千兆交换机端口模块约 50–200 元，但停工会让 10 人团队每小时损失 300–800 元产出；因此接入层排查应控制在 15 分钟内，超过即升级到网络管理员，避免“一个人修、十个人等”。</p>
+
+<h2>三、局域网与出口：用分段测试把范围压到 1 台设备</h2>
+<p><strong>步骤 1</strong>：从故障机 ping 网关、ping 同网段另一台设备、ping 公网地址，三段结果分别记录。<strong>步骤 2</strong>：若“同网段通、公网不通”，检查路由器 NAT/上行口状态与流量限速策略。<strong>步骤 3</strong>：若“网关通、同网段不通”，怀疑 AP 隔离、VLAN 划分或交换机 ACL。<strong>步骤 4</strong>：查看出口设备 5 分钟内的丢包与延迟曲线，抖动超过 30ms 且持续 3 分钟以上，联系运营商并保留截图。<strong>步骤 5</strong>：对疑似故障 AP 做“换客户端验证”——用另一台设备连同一 AP，若同样异常，问题在 AP 或上联口。</p>
+<p>常见错误：在出口设备上直接重启而不导出日志；把“网页打不开”当成“出口断了”，忽略了 DNS 或 HTTPS 证书问题；多人同时下载/更新导致带宽打满，却去查线路。经验阈值：出口带宽利用率连续 5 分钟 > 85%，先限速或错峰，再谈故障。</p>
+<p><strong>成本参考</strong>：请运营商上门检测通常 0–200 元（视合约），但若误判为线路问题而实际是内网环路，往返沟通会消耗 1–2 小时；用分段 ping 先把范围压到 1 台设备，能把无效上门减少一半以上。</p>
+
+<h2>四、远端服务与复盘：确认“不是你的网”也要留证据</h2>
+<p><strong>步骤 1</strong>：用另一条网络（手机热点）访问同一服务，若正常，问题在本地出口；若同样失败，问题在远端。<strong>步骤 2</strong>：记录失败时间、错误码、影响人数，向服务方提供 3 条以上时间点。<strong>步骤 3</strong>：若为内部系统，检查 24 小时内是否有证书到期、域名变更、安全组调整。<strong>步骤 4</strong>：恢复后 30 分钟内做一次回归测试（上传/下载/会议各 1 次），确认不是“暂时好转”。<strong>步骤 5</strong>：把根因、影响时长、处理动作写入 5 行以内的记录，便于下次 3 分钟内比对。</p>
+<p>常见错误：恢复后不复盘，导致同类问题每月重复 2–3 次；把“重启后好了”当作结论，掩盖了 DHCP 池不足或证书临期等定时炸弹。建议对反复出现的故障设阈值：同一现象 7 天内出现 ≥ 2 次，必须升级为配置整改，而不是继续重启。</p>
+
+<h2>常见问题</h2>
+<p><strong>问：只有我的电脑断网，先做什么？</strong><br>按“关代理→看 IP 是否 169.254→换网线/靠近 AP→重启适配器”四步走，每步间隔不超过 2 分钟；四步无效再用手机热点对比，10 分钟内可判断是本机还是接入层。</p>
+<p><strong>问：能上微信但打不开网页，算断网吗？</strong><br>不算。优先查 DNS 与代理设置：纯 IP 可通、域名不通，基本是解析问题；若浏览器提示证书错误，检查系统时间与证书有效期，别急着重启路由器。</p>
+<p><strong>问：什么时候该找运营商？</strong><br>网关通、同网段通，但公网持续丢包 ≥ 20% 或时延抖动 >30ms 超过 3 分钟，且换设备复现，保留 3 个时间点截图后报障；若只是单台设备异常，先按第二节排除本机，避免无效上门。</p>
+<h2>参考资料</h2>
+<ul>
+<li><a href="https://seostudio.com.cn/">seostudio</a></li>
+<li><a href="https://www.ttwlw.com.cn/">ttwlw</a></li>
+</ul>
+<footer>本文为经验整理，数据与方法随实践持续更新。</footer>
+</body>
+</html>
